@@ -43,9 +43,9 @@ jobs:
           curl -L https://github.com/sqlc-dev/sqlc/releases/download/v1.25.0/sqlc_1.25.0_linux_amd64.tar.gz | tar xvz
           sudo mv ./sqlc /usr/bin/sqlc
           which sqlc
-      - name: Run sqlc generate
-        run: make sqlc
       - name: Run migration
         run: make migrate-up
+      - name: Run sqlc generate
+        run: make sqlc
       - name: Run tests
         run: make test

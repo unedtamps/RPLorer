@@ -14,5 +14,10 @@ sqlc:
 	@sqlc generate
 test:
 	@go test -v -cover ./...
+dev:
+	@air
+prod:
+	@go build -o ./bin/app 
+	@./bin/app
 
 .PHONY: migrateup migratedown migrateforce sqlc createdb test

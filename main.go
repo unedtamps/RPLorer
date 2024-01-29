@@ -1,17 +1,19 @@
 package main
 
 import (
-	"net/http"
+	"log"
+
+	"github.com/unedtamps/go-backend/config"
 )
 
 func main() {
-	http.HandleFunc("/", Testhandler)
-	err := http.ListenAndServe(":8080", nil)
+	server, err := config.NewServer()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-}
 
-func Testhandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("testhelo world"))
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
+	}
+
 }

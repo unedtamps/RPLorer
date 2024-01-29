@@ -2,19 +2,40 @@ name: go-ci-test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: todoapp
+        # Set health checks to wait until postgres has started/ is ready to accept connections
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-    - name: Set up Go 1.21.3
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.21.3
-      id: go
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
-    - name: Run tests
-      run: make test
+      - name: Set up Go 1.21.3
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21.3
+        id: go
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: Get migrate-cli
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv ./migrate.linux-amd64 /usr/bin/migrate
+          which migrate
+      - name: Run migration
+        run: make migrate-up
+      - name: Run tests
+        run: make test

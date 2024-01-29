@@ -18,6 +18,10 @@ func NewStore(db *sql.DB) *Store {
 	}
 }
 
+func NewRepository(conn *sql.DB) *Store {
+	return NewStore(conn)
+}
+
 // create a transaction with context then call back function to execute queries
 func (st *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := st.db.BeginTx(ctx, nil)
@@ -69,21 +73,15 @@ func (st *Store) UpdateStatusPaymentWithTx(
 		}
 
 		payment, err = que.UpdatePaymentStatus(ctx, UpdatePaymentStatusParams{
-			ID: paymentID,
-			Status: NullPaymentStatus{
-				PaymentStatus: status,
-				Valid:         true,
-			},
+			ID:     paymentID,
+			Status: status,
 		})
 		if err != nil {
 			return err
 		}
 		err = que.ChangeUserType(ctx, ChangeUserTypeParams{
-			AcountType: sql.NullBool{
-				Bool:  true,
-				Valid: true,
-			},
-			ID: payment.UserID.String,
+			AcountType: true,
+			ID:         payment.UserID,
 		})
 
 		if err != nil {

@@ -6,8 +6,8 @@ CREATE TABLE "User" (
   "name" varchar(512) NOT NULL,
   "email" varchar(512) UNIQUE NOT NULL,
   "password" varchar(512) NOT NULL,
-  "account_status" boolean DEFAULT false,
-  "acount_type" boolean DEFAULT false,
+  "account_status" boolean NOT NULL DEFAULT false,
+  "acount_type" boolean NOT NULL DEFAULT false,
   "created_at" timestamptz DEFAULT CURRENT_TIMESTAMP,
   "updated_at" timestamptz DEFAULT CURRENT_TIMESTAMP
 );
@@ -15,9 +15,10 @@ CREATE TABLE "User" (
 
 CREATE TABLE "Todo" (
   "id" varchar(36) PRIMARY KEY,
-  "user_id" varchar(36),
-  "todo_name" varchar(512),
-  "description" text,
+  "user_id" varchar(36) NOT NULL,
+  "todo_name" varchar(512) NOT NULL,
+  "status" boolean DEFAULT false NOT NULL,
+  "description" text NOT NULL,
   "created_at" timestamptz DEFAULT CURRENT_TIMESTAMP,
   "updated_at" timestamptz DEFAULT CURRENT_TIMESTAMP
 );
@@ -25,8 +26,8 @@ CREATE TABLE "Todo" (
 
 CREATE TABLE "Payment" (
   "id" varchar(36) PRIMARY KEY,
-  "user_id" varchar(36),
-  "status" payment_status DEFAULT 'pending',
+  "user_id" varchar(36) NOT NULL,
+  "status" payment_status NOT NULL DEFAULT 'pending',
   "premium_type_id" varchar(36) NOT NULL,
   "amount" bigint NOT NULL
 );

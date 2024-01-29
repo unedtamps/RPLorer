@@ -63,7 +63,7 @@ func TestDeleteUserByEmail(t *testing.T) {
 func TestChangeUserStatus(t *testing.T) {
   user1 := createRandomUser(t)
   paramUserStatus := ChangeUserStatusParams{
-    AccountStatus: sql.NullBool{Bool:true, Valid: true},
+    AccountStatus:true, 
     ID: user1.ID,
   }
 

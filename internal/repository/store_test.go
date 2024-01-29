@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"testing"
 
@@ -13,10 +12,7 @@ import (
 func createRandomPayment(user CreateUserRow, t *testing.T) Payment{
   args := CreatePaymentParams{
     ID:     util.RandomUUID(),
-    UserID: sql.NullString{
-      String: user.ID,
-      Valid: true,
-    },
+    UserID: user.ID,
     PremiumTypeID:util.RandomTypePremium(),
     Amount: 50000,
   }
@@ -49,10 +45,7 @@ func TestUpdateStatusPaymentWithTx(t *testing.T) {
     errChan <- err
     if err != nil{
         paymentRes, err:= store.UpdatePaymentStatus(context.Background(), UpdatePaymentStatusParams{
-          Status: NullPaymentStatus{
-            PaymentStatus: PaymentStatusFailed,
-            Valid: true,
-          },
+          Status: PaymentStatusFailed,
           ID: payment_user_1.ID,
         })
         if err != nil {
@@ -72,10 +65,10 @@ func TestUpdateStatusPaymentWithTx(t *testing.T) {
     paymentRes := <- paymentChan
     if err != nil {
       log.Printf("got this error %v", err)
-      require.Equal(t, paymentRes.Status.PaymentStatus, PaymentStatusFailed)
+      require.Equal(t, paymentRes.Status, PaymentStatusFailed)
       continue
     }
 
-      require.Equal(t, paymentRes.Status.PaymentStatus, PaymentStatusSuccess)
+      require.Equal(t, paymentRes.Status, PaymentStatusSuccess)
   }
 }

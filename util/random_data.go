@@ -4,7 +4,6 @@ import (
 	"math/rand"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func RandomUUID() string {
@@ -29,7 +28,7 @@ func RandomEmail() string {
 
 func RandomHashedPassword() string {
 	randomPass := RandomString()
-	hash, _ := bcrypt.GenerateFromPassword([]byte(randomPass), bcrypt.DefaultCost)
+	hash, _ := GenereateHasedPassword(randomPass)
 	return string(hash)
 }
 

@@ -7,8 +7,10 @@ import (
 
 func NewRouter(h *handler.Handler) *gin.Engine {
 	router := gin.Default()
+
 	router.POST("/create-user", h.User.CreateUser)
-	router.POST("/create-todo/:id", h.Todo.CreateTodo)
-	router.GET("/get-alluser", h.User.CreateUser)
+	router.POST("/create-todo/:user_id", h.Todo.CreateTodo)
+	router.GET("/get-todo/:user_id", h.Todo.GetTodoByUserId)
+	router.GET("/get-alluser", h.User.GetAllUser)
 	return router
 }

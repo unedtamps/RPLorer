@@ -11,7 +11,7 @@ FROM "User" WHERE id = $1 LIMIT 1;
 SELECT id , name , email FROM "User" ORDER BY created_at ASC;
 
 -- name: GetUsers :many
-SELECT id , name , email , password 
+SELECT id , name , email
 FROM "User" ORDER BY created_at ASC LIMIT $1 OFFSET $2;
 
 -- name: ChangeUserStatus :exec

@@ -13,3 +13,8 @@ func NewHandler(s *service.Service) *Handler {
 		Todo: newTodoHandler(s.Todo),
 	}
 }
+
+type paginateForm struct {
+	Page      int64 `form:"page"      binding:"min=1"`
+	Page_size int64 `form:"page_size" binding:"min=5"`
+}

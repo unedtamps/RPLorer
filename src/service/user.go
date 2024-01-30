@@ -13,6 +13,7 @@ type UserService struct {
 
 type UserServiceI interface {
 	CreateUser(context.Context, string, string, string) (*r.CreateUserRow, error)
+	GetAllUser(context.Context, int64, int64) ([]*r.GetUsersRow, util.MetaData, error)
 }
 
 func newUserService(repo *r.Store) *UserService {
@@ -34,4 +35,19 @@ func (s *UserService) CreateUser(
 		Email:    email,
 	})
 	return user, err
+}
+
+func (s *UserService) GetAllUser(
+	ctx context.Context,
+	page int64,
+	pageSize int64,
+) ([]*r.GetUsersRow, util.MetaData, error) {
+	limit, offset := util.WithPagination(page, pageSize)
+	getUsersParams := r.GetUsersParams{
+		Limit:  limit,
+		Offset: offset,
+	}
+	users, err := s.Queries.GetUsers(ctx, getUsersParams)
+	metadata := util.WithMetadata(page, int64(len(users)), nil)
+	return users, metadata, err
 }

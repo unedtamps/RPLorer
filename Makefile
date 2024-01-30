@@ -1,4 +1,4 @@
-created-b:
+created:
 	docker compose up
 migrate-up:
 	@migrate -path internal/db/migration -database "postgresql://postgres:password@localhost:5432/todoapp?sslmode=disable" -verbose up
@@ -19,5 +19,8 @@ dev:
 prod:
 	@go build -o ./bin/app 
 	@GIN_MODE="release" ./bin/app
+install:
+	@go get -u
 
-.PHONY: migrateup migratedown migrateforce sqlc createdb test
+
+.PHONY: migrateup migratedown migrateforce sqlc createdb test dev prod

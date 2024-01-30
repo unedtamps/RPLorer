@@ -3,3 +3,5 @@ tmp
 db.go
 query_interface.go
 models.go
+.env
+bin

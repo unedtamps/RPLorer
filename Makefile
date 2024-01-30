@@ -15,9 +15,9 @@ sqlc:
 test:
 	@go test -v -cover ./...
 dev:
-	@air
+	@GIN_MODE="debug" air
 prod:
 	@go build -o ./bin/app 
-	@./bin/app
+	@GIN_MODE="release" ./bin/app
 
 .PHONY: migrateup migratedown migrateforce sqlc createdb test

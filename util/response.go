@@ -48,11 +48,11 @@ func responseOk(message string) interface{} {
 	}
 }
 
-func ResponseCreated(c *gin.Context, message string, data interface{}) {
+func ResponseCreated(c *gin.Context, message string, data ...interface{}) {
 	c.JSON(http.StatusCreated, responseWithData(message, data, nil))
 }
 
-func ResponseData(c *gin.Context, message string, data interface{}, metadata *MetaData) {
+func ResponseData(c *gin.Context, message string, metadata *MetaData, data ...interface{}) {
 	c.JSON(http.StatusOK, responseWithData(message, data, metadata))
 }
 

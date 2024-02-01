@@ -3,14 +3,13 @@ package src
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/unedtamps/go-backend/src/handler"
+	"github.com/unedtamps/go-backend/src/router"
 )
 
 func NewRouter(h *handler.Handler) *gin.Engine {
-	router := gin.Default()
+	r := gin.Default()
+	router.UserRouter("/user", r, h.User)
+	router.TodoRouter("/todo", r, h.Todo)
 
-	router.POST("/create-user", h.User.CreateUser)
-	router.POST("/create-todo/:user_id", h.Todo.CreateTodo)
-	router.GET("/get-todo/:user_id", h.Todo.GetTodoByUserId)
-	router.GET("/get-alluser", h.User.GetAllUser)
-	return router
+	return r
 }

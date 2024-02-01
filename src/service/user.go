@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	r "github.com/unedtamps/go-backend/internal/repository"
 	"github.com/unedtamps/go-backend/util"
@@ -14,6 +15,7 @@ type UserService struct {
 type UserServiceI interface {
 	CreateUser(context.Context, string, string, string) (*r.CreateUserRow, error)
 	GetAllUser(context.Context, int64, int64) ([]*r.GetUsersRow, util.MetaData, error)
+	LoginUser(context.Context, string, string) (*r.GetUserByEmailRow, error)
 }
 
 func newUserService(repo *r.Store) *UserService {
@@ -50,4 +52,25 @@ func (s *UserService) GetAllUser(
 	users, err := s.Queries.GetUsers(ctx, getUsersParams)
 	metadata := util.WithMetadata(page, int64(len(users)), nil)
 	return users, metadata, err
+}
+
+func (s *UserService) LoginUser(
+	ctx context.Context,
+	email string,
+	password string,
+) (*r.GetUserByEmailRow, error) {
+	user, err := s.Queries.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	// check user not found
+	if user == nil {
+		return nil, errors.New("Email or Password Not Valid")
+	}
+	// compare password
+	if ok := util.CompareHashedPassword(user.Password, password); !ok {
+		return nil, errors.New("Email or Password Not Valid")
+	}
+	// return data
+	return user, nil
 }

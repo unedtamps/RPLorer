@@ -1,18 +1,16 @@
 package main
 
 import (
-	"log"
-
-	"github.com/unedtamps/go-backend/config"
+	"github.com/unedtamps/go-backend/bootstrap"
+	"github.com/unedtamps/go-backend/util"
 )
 
 func main() {
-	server, err := config.NewServer()
+	server, err := bootstrap.InitServer()
 	if err != nil {
-		log.Fatal(err)
+		util.Log.Fatal(err)
 	}
-
 	if err := server.Start(); err != nil {
-		log.Fatal(err)
+		util.Log.Fatal(err)
 	}
 }

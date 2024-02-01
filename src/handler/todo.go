@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
+	"github.com/unedtamps/go-backend/src/middleware"
 	"github.com/unedtamps/go-backend/src/service"
 	"github.com/unedtamps/go-backend/util"
 )
@@ -12,6 +15,7 @@ type TodoHandler struct {
 
 type TodoHandlerI interface {
 	CreateTodo(*gin.Context)
+	GetTodoByUserId(*gin.Context)
 }
 
 type createTodoBody struct {
@@ -23,18 +27,14 @@ type userParams struct {
 	UserId string `uri:"user_id" binding:"required"`
 }
 
-func newTodoHandler(todoService service.TodoServiceI) TodoHandler {
-	return TodoHandler{t: todoService}
+func newTodoHandler(todoService service.TodoServiceI) TodoHandlerI {
+	return &TodoHandler{todoService}
 }
 
 func (h *TodoHandler) CreateTodo(c *gin.Context) {
 	body := createTodoBody{}
-	params := userParams{}
+	cred := middleware.GetCredentials(c)
 	if err := c.ShouldBindJSON(&body); err != nil {
-		util.BadRequest(c, err)
-		return
-	}
-	if err := c.ShouldBindUri(&params); err != nil {
 		util.BadRequest(c, err)
 		return
 	}
@@ -42,7 +42,7 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 	todo, err := h.t.CreateTodo(c, service.TodoParams{
 		Title:  body.Title,
 		Desc:   body.Description,
-		UserId: params.UserId,
+		UserId: cred.Id,
 	})
 	if err != nil {
 		util.UnknownError(c, err)
@@ -52,21 +52,20 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 }
 
 func (h *TodoHandler) GetTodoByUserId(c *gin.Context) {
-	params := userParams{}
+	cred := middleware.GetCredentials(c)
 	query := paginateForm{}
-	if err := c.ShouldBindUri(&params); err != nil {
-		util.BadRequest(c, err)
-		return
-	}
 	if err := c.ShouldBindQuery(&query); err != nil {
 		util.BadRequest(c, err)
 		return
 	}
-
-	todo, metadata, err := h.t.GetTodoByUserId(c, params.UserId, query.Page, query.Page_size)
+	todo, metadata, err := h.t.GetTodoByUserId(c, cred.Id, query.Page, query.Page_size)
 	if err != nil {
 		util.UnknownError(c, err)
 		return
 	}
-	util.ResponseData(c, "Get todo", todo, metadata)
+	if todo == nil {
+		util.NotFoundError(c, errors.New("Todo"))
+		return
+	}
+	util.ResponseData(c, "Get todo", metadata, todo)
 }

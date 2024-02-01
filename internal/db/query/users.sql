@@ -7,6 +7,10 @@ RETURNING id, name, email;
 SELECT id, name, email, password 
 FROM "User" WHERE id = $1 LIMIT 1;
 
+-- name: GetUserByEmail :one
+SELECT id , name , email , password, account_status, acount_type
+FROM "User" WHERE email = $1 LIMIT 1;
+
 -- name: GetAllUsers :many
 SELECT id , name , email FROM "User" ORDER BY created_at ASC;
 

@@ -10,7 +10,7 @@ func UserRouter(path string, r *gin.Engine, u handler.UserHandlerI) {
 	user := r.Group(path)
 	{
 		user.POST("/create", u.CreateUser)
-		user.GET("/getall", m.VerifiyJwtToken, u.GetAllUser)
+		user.GET("/getall", m.RateLimit, m.VerifiyJwtToken, u.GetAllUser)
 		user.GET("/me", m.VerifiyJwtToken, u.GetMe)
 		user.POST("/login", u.LoginUser)
 	}

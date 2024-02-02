@@ -20,8 +20,7 @@ services:
     container_name: redis_todo
     image: redis:7.2.4-alpine
     environment:
-      - REDIS_PASSWORD=redis
-      - REDIS_PORT=6379
+      - REIDS_PASSWORD=password
       - REDIS_DB=0
     ports:
       - 6379:6379

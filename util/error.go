@@ -18,6 +18,10 @@ func UnknownError(c *gin.Context, err error) {
 	c.JSON(http.StatusInternalServerError, ErrorHandler(fmt.Errorf("Unknown Error: %v", err)))
 }
 
+func LimitError(c *gin.Context, err error) {
+	c.JSON(http.StatusTooManyRequests, ErrorHandler(fmt.Errorf("Limit Error: %v", err)))
+}
+
 func BadRequest(c *gin.Context, err error) {
 	c.JSON(http.StatusBadRequest, ErrorHandler(fmt.Errorf("Bad Request: %v", err)))
 }

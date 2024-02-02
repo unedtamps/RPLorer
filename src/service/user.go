@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -39,7 +40,27 @@ func (s *UserService) CreateUser(
 		Password: hashPassword,
 		Email:    email,
 	})
-	return user, err
+
+	if err != nil {
+		switch err.Error() {
+		case "pq: duplicate key value violates unique constraint \"User_email_key\"":
+			return nil, errors.New("Account Already Exist")
+		default:
+			return nil, err
+		}
+	}
+	// send email confirmation concurrently
+	body := make(chan string)
+	go func() {
+		body <- util.ParseAccountComfirmation(util.EmailConfirm{
+			Id:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+		})
+	}()
+	go newEmail("Account Confirmation", email, body).Send()
+
+	return user, nil
 }
 
 func (s *UserService) GetAllUser(
@@ -53,6 +74,16 @@ func (s *UserService) GetAllUser(
 		Offset: offset,
 	}
 	users, err := s.Queries.GetUsers(ctx, getUsersParams)
+
+	for _, v := range users {
+		str := util.ParseAccountComfirmation(util.EmailConfirm{
+			Id:    v.ID,
+			Email: v.Email,
+			Name:  v.Name,
+		})
+		fmt.Println(str)
+	}
+
 	metadata := util.WithMetadata(page, int64(len(users)), nil)
 	return users, metadata, err
 }
@@ -79,6 +110,7 @@ func (s *UserService) LoginUser(
 	if ok := util.CompareHashedPassword(user.Password, password); !ok {
 		return nil, errors.New("Email or Password Not Valid")
 	}
+
 	err = s.c.Set(ctx, user.Email, user.ID, time.Hour).Err()
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"crypto/tls"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 	"github.com/unedtamps/go-backend/src"
 	"github.com/unedtamps/go-backend/src/handler"
 	"github.com/unedtamps/go-backend/src/service"
+	"gopkg.in/gomail.v2"
 )
 
 type Server struct {
@@ -24,8 +26,17 @@ func InitServer() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	// email dialer
+	dialer := gomail.NewDialer(
+		config.Env.SmtpHost,
+		config.Env.SmtPort,
+		config.Env.SmtUserName,
+		config.Env.SmtPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
 	repo := repository.NewStore(db)
-	service := service.NewService(repo, cache)
+	service := service.NewService(repo, cache, dialer)
 	handler := handler.NewHandler(service)
 	router := src.NewRouter(handler)
 	return &Server{router}, nil

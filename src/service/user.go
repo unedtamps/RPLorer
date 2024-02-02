@@ -3,13 +3,16 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
+	"github.com/redis/go-redis/v9"
 	r "github.com/unedtamps/go-backend/internal/repository"
 	"github.com/unedtamps/go-backend/util"
 )
 
 type UserService struct {
 	*r.Store
+	c *redis.Client
 }
 
 type UserServiceI interface {
@@ -18,8 +21,8 @@ type UserServiceI interface {
 	LoginUser(context.Context, string, string) (*r.GetUserByEmailRow, error)
 }
 
-func newUserService(repo *r.Store) *UserService {
-	return &UserService{repo}
+func newUserService(repo *r.Store, cache *redis.Client) *UserService {
+	return &UserService{repo, cache}
 }
 
 func (s *UserService) CreateUser(
@@ -59,6 +62,11 @@ func (s *UserService) LoginUser(
 	email string,
 	password string,
 ) (*r.GetUserByEmailRow, error) {
+	value, err := s.c.Get(ctx, email).Result()
+	if err == nil {
+		util.Log.Info(value)
+	}
+
 	user, err := s.Queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
@@ -70,6 +78,10 @@ func (s *UserService) LoginUser(
 	// compare password
 	if ok := util.CompareHashedPassword(user.Password, password); !ok {
 		return nil, errors.New("Email or Password Not Valid")
+	}
+	err = s.c.Set(ctx, user.Email, user.ID, time.Hour).Err()
+	if err != nil {
+		return nil, err
 	}
 	// return data
 	return user, nil

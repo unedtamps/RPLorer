@@ -16,19 +16,30 @@ services:
       - todo_network
     volumes:
       - ~/apps/postgres:/var/lib/postgresql/todoapp
+  redis:
+    container_name: redis_todo
+    image: redis:7.2.4-alpine
+    environment:
+      - REDIS_PASSWORD=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    ports:
+      - 6379:6379
+    networks:
+      - todo_network
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      - DB_URI=postgresql://postgres:password@postgres_todo:5432/todoapp?sslmode=disable
-      - GIN_MODE=release
+    env_file:
+      - .env
     ports:
       - 8080:8080
     networks:
       - todo_network
     depends_on:
       - postgres
+      - redis
     entrypoint:
       ["/app/wait-for.sh", "postgres_todo:5432", "--", "/app/start.sh"]
     command: ["/app/main"]

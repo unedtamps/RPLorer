@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 
+	"github.com/redis/go-redis/v9"
 	r "github.com/unedtamps/go-backend/internal/repository"
 	"github.com/unedtamps/go-backend/util"
 )
 
 type TodoService struct {
 	*r.Store
+	c *redis.Client
 }
 
 type TodoParams struct {
@@ -27,10 +29,8 @@ type TodoServiceI interface {
 	) ([]*r.GetTodoByUserIdRow, *util.MetaData, error)
 }
 
-func newTodoService(store *r.Store) *TodoService {
-	return &TodoService{
-		Store: store,
-	}
+func newTodoService(repo *r.Store, cache *redis.Client) *TodoService {
+	return &TodoService{repo, cache}
 }
 
 func (t *TodoService) CreateTodo(ctx context.Context, p TodoParams) (*r.CreateTodoRow, error) {

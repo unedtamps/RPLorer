@@ -20,13 +20,17 @@ func InitServer() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	cache, err := connectCache()
+	if err != nil {
+		return nil, err
+	}
 	repo := repository.NewStore(db)
-	service := service.NewService(repo)
+	service := service.NewService(repo, cache)
 	handler := handler.NewHandler(service)
 	router := src.NewRouter(handler)
 	return &Server{router}, nil
 }
 
 func (s *Server) Start() error {
-	return s.route.Run(fmt.Sprintf(":%s", config.Env.Port))
+	return s.route.Run(fmt.Sprintf(":%s", config.Env.ServerPort))
 }

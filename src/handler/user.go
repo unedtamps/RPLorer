@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,7 +46,6 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.ErrorHandler(err))
 		return
 	}
-	fmt.Println("masuk ke sini")
 	util.ResponseCreated(c, "User created", user)
 }
 

@@ -2,15 +2,23 @@ package bootstrap
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/lib/pq"
 	"github.com/unedtamps/go-backend/config"
 )
 
 func connectDB() (*sql.DB, error) {
-	conn, err := sql.Open(config.Env.DBDriver, config.Env.DBUri)
+	db_url := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s sslmode=disable",
+		config.Env.PosgresHost,
+		config.Env.PostgresUser,
+		config.Env.PostgresPassword,
+		config.Env.PostgresDB,
+	)
+	conn, err := sql.Open(config.Env.DBDriver, db_url)
 	if err != nil {
 		return nil, err
 	}
-	return conn, nil
+	return conn, conn.Ping()
 }

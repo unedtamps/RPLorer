@@ -6,11 +6,18 @@ import (
 )
 
 type configServer struct {
-	Host      string `mapstructure:"SERVER_HOST"`
-	Port      string `mapstructure:"SERVER_PORT"`
-	DBDriver  string `mapstructure:"DB_DRIVER"`
-	DBUri     string `mapstructure:"DB_URI"`
-	JWTSecret string `mapstructure:"JWT_SECRET"`
+	ServerHost       string `mapstructure:"SERVER_HOST"`
+	ServerPort       string `mapstructure:"SERVER_PORT"`
+	JWTSecret        string `mapstructure:"JWT_SECRET"`
+	DBDriver         string `mapstructure:"DB_DRIVER"`
+	PostgresUser     string `mapstructure:"POSTGRES_USER"`
+	PostgresPassword string `mapstructure:"POSTGRES_PASSWORD"`
+	PostgresDB       string `mapstructure:"POSTGRES_DB"`
+	PosgresHost      string `mapstructure:"POSTGRES_HOST"`
+	RedisHost        string `mapstructure:"REDIS_HOST"`
+	RedisPort        string `mapstructure:"REDIS_PORT"`
+	RedisPassword    string `mapstructure:"REDIS_PASSWORD"`
+	RedisDB          int    `mapstructure:"REDIS_DB"`
 }
 
 var Env configServer

@@ -11,7 +11,7 @@ type EmailConfirm struct {
 	Email string
 }
 
-func ParseAccountComfirmation(em EmailConfirm) string {
+func ParseAccountConfirmation(em EmailConfirm) string {
 	var a bytes.Buffer
 	tpl := template.Must(template.ParseFiles("template/email_confirm.html"))
 

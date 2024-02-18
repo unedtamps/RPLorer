@@ -13,12 +13,12 @@ create-migrate:
 sqlc:
 	@sqlc generate
 test:
-	@go test -v -cover ./...
+	@ENV="test" go test -v -cover ./...
 dev:
-	@GIN_MODE="debug" air
+	@ENV="dev" GIN_MODE="debug" air
 prod:
 	@go build -o ./bin/app 
-	@GIN_MODE="release" ./bin/app
+	@ENV="prod" GIN_MODE="release" ./bin/app
 install:
 	@go get -u
 

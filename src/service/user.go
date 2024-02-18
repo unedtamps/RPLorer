@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -13,7 +12,7 @@ import (
 
 type UserService struct {
 	*r.Store
-	c *redis.Client
+	cache *redis.Client
 }
 
 type UserServiceI interface {
@@ -49,17 +48,6 @@ func (s *UserService) CreateUser(
 			return nil, err
 		}
 	}
-	// send email confirmation concurrently
-	body := make(chan string)
-	go func() {
-		body <- util.ParseAccountComfirmation(util.EmailConfirm{
-			Id:    user.ID,
-			Name:  user.Name,
-			Email: user.Email,
-		})
-	}()
-	go newEmail("Account Confirmation", email, body).Send()
-
 	return user, nil
 }
 
@@ -75,15 +63,6 @@ func (s *UserService) GetAllUser(
 	}
 	users, err := s.Queries.GetUsers(ctx, getUsersParams)
 
-	for _, v := range users {
-		str := util.ParseAccountComfirmation(util.EmailConfirm{
-			Id:    v.ID,
-			Email: v.Email,
-			Name:  v.Name,
-		})
-		fmt.Println(str)
-	}
-
 	metadata := util.WithMetadata(page, int64(len(users)), nil)
 	return users, metadata, err
 }
@@ -93,7 +72,8 @@ func (s *UserService) LoginUser(
 	email string,
 	password string,
 ) (*r.GetUserByEmailRow, error) {
-	value, err := s.c.Get(ctx, email).Result()
+	value, err := s.cache.Get(ctx, email).Result()
+
 	if err == nil {
 		util.Log.Info(value)
 	}
@@ -111,7 +91,7 @@ func (s *UserService) LoginUser(
 		return nil, errors.New("Email or Password Not Valid")
 	}
 
-	err = s.c.Set(ctx, user.Email, user.ID, time.Hour).Err()
+	err = s.cache.Set(ctx, user.Email, user.ID, time.Hour).Err()
 	if err != nil {
 		return nil, err
 	}

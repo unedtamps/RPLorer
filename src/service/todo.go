@@ -19,6 +19,8 @@ type TodoParams struct {
 	UserId string
 }
 
+var some int
+
 type TodoServiceI interface {
 	CreateTodo(context.Context, TodoParams) (*r.CreateTodoRow, error)
 	GetTodoByUserId(

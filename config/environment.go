@@ -31,14 +31,19 @@ type configServer struct {
 var Env configServer
 
 func init() {
-	viper.SetConfigFile(".env")
-	Env = configServer{}
-	err := viper.ReadInConfig()
-	if err != nil {
-		util.Log.Fatal(err)
-	}
-	err = viper.Unmarshal(&Env)
-	if err != nil {
-		util.Log.Fatal(err)
+	viper.AutomaticEnv()
+
+	if viper.GetString("ENV") != "test" {
+
+		viper.SetConfigFile(".env")
+		Env = configServer{}
+		err := viper.ReadInConfig()
+		if err != nil {
+			util.Log.Fatal(err)
+		}
+		err = viper.Unmarshal(&Env)
+		if err != nil {
+			util.Log.Fatal(err)
+		}
 	}
 }

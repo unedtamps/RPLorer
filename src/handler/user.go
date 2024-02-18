@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/unedtamps/go-backend/src/helper"
 	"github.com/unedtamps/go-backend/src/middleware"
 	"github.com/unedtamps/go-backend/src/service"
 	"github.com/unedtamps/go-backend/util"
@@ -42,6 +43,18 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 	user, err := h.u.CreateUser(c, params.Name, params.Email, params.Password)
+
+	// send email confirmation
+	body := make(chan string)
+	go func() {
+		body <- util.ParseAccountConfirmation(util.EmailConfirm{
+			Id:    user.ID,
+			Name:  user.Name,
+			Email: user.Email,
+		})
+	}()
+	go helper.NewEmail("Account Confirmation", user.Email, body).Send()
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.ErrorHandler(err))
 		return

@@ -1,4 +1,4 @@
-package service
+package helper
 
 import (
 	"github.com/unedtamps/go-backend/config"
@@ -6,7 +6,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-var dialer *gomail.Dialer
+var Dialer *gomail.Dialer
 
 type emailService struct {
 	from    string
@@ -15,7 +15,7 @@ type emailService struct {
 	body    string
 }
 
-func newEmail(subject string, to string, body <-chan string) *emailService {
+func NewEmail(subject string, to string, body <-chan string) *emailService {
 	return &emailService{
 		from:    config.Env.EmailSender,
 		to:      to,
@@ -30,7 +30,7 @@ func (e *emailService) Send() {
 	m.SetHeader("To", e.to)
 	m.SetHeader("Subject", e.subject)
 	m.SetBody("text/html", e.body)
-	err := dialer.DialAndSend(m)
+	err := Dialer.DialAndSend(m)
 	if err != nil {
 		util.Log.Info("Error sending email: ", err)
 	} else {

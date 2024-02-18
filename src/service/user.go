@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"time"
 
 	"github.com/redis/go-redis/v9"
 	r "github.com/unedtamps/go-backend/internal/repository"
@@ -19,6 +19,7 @@ type UserServiceI interface {
 	CreateUser(context.Context, string, string, string) (*r.CreateUserRow, error)
 	GetAllUser(context.Context, int64, int64) ([]*r.GetUsersRow, util.MetaData, error)
 	LoginUser(context.Context, string, string) (*r.GetUserByEmailRow, error)
+	GetUserByEmail(context.Context, string) (*r.GetUserByEmailRow, error)
 }
 
 func newUserService(repo *r.Store, cache *redis.Client) *UserService {
@@ -67,15 +68,44 @@ func (s *UserService) GetAllUser(
 	return users, metadata, err
 }
 
+func (s *UserService) GetUserByEmail(
+	ctx context.Context,
+	email string,
+) (*r.GetUserByEmailRow, error) {
+
+	val, err := s.cache.Get(ctx, email).Result()
+
+	if err == nil {
+		res, err := util.ParseCache[r.GetUserByEmailRow](val)
+		return res, err
+	}
+
+	user, err := s.Queries.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	redisData, _ := json.Marshal(user)
+	err = s.cache.Set(ctx, email, redisData, 0).Err()
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (s *UserService) LoginUser(
 	ctx context.Context,
 	email string,
 	password string,
 ) (*r.GetUserByEmailRow, error) {
-	value, err := s.cache.Get(ctx, email).Result()
+
+	val, err := s.cache.Get(ctx, email).Result()
 
 	if err == nil {
-		util.Log.Info(value)
+		res, err := util.ParseCache[r.GetUserByEmailRow](val)
+		if ok := util.CompareHashedPassword(res.Password, password); !ok {
+			return nil, errors.New("Email or Password Not Valid")
+		}
+		return res, err
 	}
 
 	user, err := s.Queries.GetUserByEmail(ctx, email)
@@ -91,10 +121,8 @@ func (s *UserService) LoginUser(
 		return nil, errors.New("Email or Password Not Valid")
 	}
 
-	err = s.cache.Set(ctx, user.Email, user.ID, time.Hour).Err()
-	if err != nil {
-		return nil, err
-	}
+	redisData, _ := json.Marshal(user)
+	err = s.cache.Set(ctx, email, redisData, 0).Err()
 	// return data
-	return user, nil
+	return user, err
 }

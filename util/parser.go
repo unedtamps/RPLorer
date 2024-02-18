@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"encoding/json"
 	"text/template"
 )
 
@@ -20,4 +21,10 @@ func ParseAccountConfirmation(em EmailConfirm) string {
 		Log.Fatal("Error parsing email confirmation template: ", err)
 	}
 	return a.String()
+}
+
+func ParseCache[T any](data string) (*T, error) {
+	var result T
+	err := json.Unmarshal([]byte(data), &result)
+	return &result, err
 }

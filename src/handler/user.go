@@ -18,6 +18,7 @@ type UserHandlerI interface {
 	CreateUser(c *gin.Context)
 	GetAllUser(c *gin.Context)
 	GetMe(c *gin.Context)
+	GetUserByEmail(c *gin.Context)
 	LoginUser(c *gin.Context)
 }
 
@@ -102,4 +103,14 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		return
 	}
 	util.ResponseData(c, "Login Success", nil, user, TokenJwt{Token: token})
+}
+
+func (h *UserHandler) GetUserByEmail(c *gin.Context) {
+	email := c.Param("email")
+	user, err := h.u.GetUserByEmail(c, email)
+	if err != nil {
+		util.NotFoundError(c, err)
+		return
+	}
+	util.ResponseData(c, "Get user by email", nil, user)
 }

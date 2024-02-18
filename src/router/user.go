@@ -13,5 +13,6 @@ func UserRouter(path string, r *gin.Engine, u handler.UserHandlerI) {
 		user.GET("/getall", m.RateLimit, m.VerifiyJwtToken, u.GetAllUser)
 		user.GET("/me", m.VerifiyJwtToken, u.GetMe)
 		user.POST("/login", u.LoginUser)
+		user.GET("/:email", m.RateLimit, m.VerifiyJwtToken, u.GetUserByEmail)
 	}
 }

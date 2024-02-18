@@ -34,7 +34,6 @@ func init() {
 	viper.AutomaticEnv()
 
 	if viper.GetString("ENV") != "test" {
-
 		viper.SetConfigFile(".env")
 		Env = configServer{}
 		err := viper.ReadInConfig()

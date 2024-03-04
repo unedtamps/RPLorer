@@ -6,7 +6,7 @@ on:
     branches: [master]
 jobs:
   test:
-    name: Test
+    name: golang-test
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -22,11 +22,16 @@ jobs:
         ports:
           - 5432:5432
       redis:
-        container_name: redis_todo
-        image: redis:7.2.4-alpine
-        environment:
-          - REDIS_PASSWORD=password
-          - REDIS_DB=0
+        # Docker Hub image
+        image: redis
+        # Set health checks to wait until redis has started
+        env:
+          REDIS_PASSWORD: password
+          REDIS_DB: 0
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 6379:6379
     steps:

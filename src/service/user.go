@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	r "github.com/unedtamps/go-backend/internal/repository"
@@ -112,17 +113,19 @@ func (s *UserService) LoginUser(
 	if err != nil {
 		return nil, err
 	}
+
 	// check user not found
 	if user == nil {
 		return nil, errors.New("Email or Password Not Valid")
 	}
+
 	// compare password
 	if ok := util.CompareHashedPassword(user.Password, password); !ok {
 		return nil, errors.New("Email or Password Not Valid")
 	}
 
 	redisData, _ := json.Marshal(user)
-	err = s.cache.Set(ctx, email, redisData, 0).Err()
+	err = s.cache.Set(ctx, email, redisData, time.Hour).Err()
 	// return data
 	return user, err
 }

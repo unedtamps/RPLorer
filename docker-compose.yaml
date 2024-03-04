@@ -1,7 +1,6 @@
 networks:
   todo_network:
     driver: bridge
-
 services:
   postgres:
     container_name: postgres_todo
@@ -20,7 +19,7 @@ services:
     container_name: redis_todo
     image: redis:7.2.4-alpine
     environment:
-      - REIDS_PASSWORD=password
+      - REDIS_PASSWORD=password
       - REDIS_DB=0
     ports:
       - 6379:6379
@@ -39,6 +38,5 @@ services:
     depends_on:
       - postgres
       - redis
-    entrypoint:
-      ["/app/wait-for.sh", "postgres_todo:5432", "--", "/app/start.sh"]
+    entrypoint: ["/app/wait-for.sh", "postgres_todo:5432", "--", "/app/start.sh"]
     command: ["/app/main"]

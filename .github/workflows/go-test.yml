@@ -1,5 +1,4 @@
 name: go-test
-
 on:
   push:
     branches: [master]
@@ -18,13 +17,18 @@ jobs:
           POSTGRES_DB: todoapp
         # Set health checks to wait until postgres has started/ is ready to accept connections
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         # expose port
         ports:
           - 5432:5432
+      redis:
+        container_name: redis_todo
+        image: redis:7.2.4-alpine
+        environment:
+          - REDIS_PASSWORD=password
+          - REDIS_DB=0
+        ports:
+          - 6379:6379
     steps:
       - name: Set up Go 1.21.3
         uses: actions/setup-go@v4

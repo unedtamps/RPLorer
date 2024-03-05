@@ -3,8 +3,7 @@ package handler
 import "github.com/unedtamps/go-backend/src/service"
 
 type Handler struct {
-	User UserHandlerI
-	Todo TodoHandlerI
+	Acc AccountHandlerI
 }
 
 type TokenJwt struct {
@@ -13,8 +12,7 @@ type TokenJwt struct {
 
 func NewHandler(s *service.Service) *Handler {
 	return &Handler{
-		User: newUserHandler(s.User),
-		Todo: newTodoHandler(s.Todo),
+		Acc: newAccountHandler(s.Account),
 	}
 }
 

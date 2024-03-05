@@ -1,0 +1,2 @@
+ALTER TABLE "images" DROP CONSTRAINT IF EXISTS post_images;
+DROP TABLE IF EXISTS "images";

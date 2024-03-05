@@ -10,8 +10,6 @@ import (
 func NewRouter(h *handler.Handler) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.Default())
-
-	router.UserRouter("/user", r, h.User)
-	router.TodoRouter("/todo", r, h.Todo)
+	router.AccountRouter("/user", r, h.Acc)
 	return r
 }

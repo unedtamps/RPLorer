@@ -15,7 +15,7 @@ import (
 
 var (
 	dbDriver = "postgres"
-	dbSource = "postgresql://postgres:password@localhost:5432/todoapp?sslmode=disable"
+	dbSource = "postgresql://postgres:password@localhost:5432/rplorer?sslmode=disable"
 )
 
 var (
@@ -39,6 +39,6 @@ func TestMain(m *testing.M) {
 		Password: redisPassword,
 		DB:       redisDb,
 	})
-	testUserService = newUserService(testStore, redisClent)
+	testUserService = newAccountService(testStore, redisClent)
 	os.Exit(m.Run())
 }

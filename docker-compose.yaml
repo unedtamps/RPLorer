@@ -1,22 +1,22 @@
 networks:
-  todo_network:
+  rpl_network:
     driver: bridge
 services:
   postgres:
-    container_name: postgres_todo
+    container_name: postgres_rpl
     image: postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=todoapp
+      - POSTGRES_DB=rplorer
     ports:
       - 5432:5432
     networks:
-      - todo_network
+      - rpl_network
     volumes:
-      - ~/apps/postgres:/var/lib/postgresql/todoapp
+      - ~/apps/postgres:/var/lib/postgresql/rplorer
   redis:
-    container_name: redis_todo
+    container_name: redis_rpl
     image: redis:7.2.4-alpine
     environment:
       - REDIS_PASSWORD=password
@@ -24,7 +24,7 @@ services:
     ports:
       - 6379:6379
     networks:
-      - todo_network
+      - rpl_network
   api:
     build:
       context: .
@@ -34,7 +34,7 @@ services:
     ports:
       - 8080:8080
     networks:
-      - todo_network
+      - rpl_network
     depends_on:
       - postgres
       - redis

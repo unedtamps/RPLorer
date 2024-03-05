@@ -8,14 +8,12 @@ import (
 )
 
 type Service struct {
-	User UserServiceI
-	Todo TodoServiceI
+	Account AccountService
 }
 
 func NewService(repo *r.Store, cache *redis.Client, d *gomail.Dialer) *Service {
 	helper.Dialer = d
 	return &Service{
-		User: newUserService(repo, cache),
-		Todo: newTodoService(repo, cache),
+		Account: *newAccountService(repo, cache),
 	}
 }

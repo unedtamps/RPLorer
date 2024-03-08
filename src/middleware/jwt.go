@@ -16,6 +16,7 @@ type Credentials struct {
 	Id    string `json:"id"`
 	Email string `json:"email"`
 	Name  string `json:"name"`
+	Role  string `json:"role"`
 }
 
 func GetCredentials(c *gin.Context) Credentials {
@@ -25,7 +26,7 @@ func GetCredentials(c *gin.Context) Credentials {
 func CreateJwtToken(payload interface{}) (string, error) {
 	var t *jwt.Token
 	claims := jwt.MapClaims{
-		"iss":     "todo-app",
+		"iss":     "rplorer",
 		"exp":     time.Now().Add(time.Hour * 12).Unix(),
 		"payload": payload,
 	}
@@ -36,12 +37,18 @@ func CreateJwtToken(payload interface{}) (string, error) {
 
 func VerifiyJwtToken(c *gin.Context) {
 	tokenString := c.Request.Header.Get("Authorization")
-	if tokenString == "" {
-		util.UnauthorizedError(c, errors.New("Token Not Provided"))
-		c.Abort()
-		return
+	if tokenString != "" {
+		tokenString = strings.Split(tokenString, "Bearer ")[1]
+	} else {
+		// get from params
+		tokenString = c.Query("Authorization")
+		if tokenString == "" {
+			util.UnauthorizedError(c, errors.New("Token Not Provided"))
+			c.Abort()
+			return
+		}
+		tokenString = strings.Split(tokenString, "Bearer ")[1]
 	}
-	tokenString = strings.Split(tokenString, "Bearer ")[1]
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -64,7 +71,18 @@ func VerifiyJwtToken(c *gin.Context) {
 		Id:    payload["id"].(string),
 		Email: payload["email"].(string),
 		Name:  payload["name"].(string),
+		Role:  payload["role"].(string),
 	}
 	c.Set("cred", data)
+	c.Next()
+}
+
+func IsAdmin(c *gin.Context) {
+	cred := c.Value("cred").(Credentials)
+	if cred.Role != "ADMIN" {
+		util.ForbiddenError(c, errors.New("You are not authorized to perform this action"))
+		c.Abort()
+		return
+	}
 	c.Next()
 }

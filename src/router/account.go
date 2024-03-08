@@ -5,12 +5,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/unedtamps/go-backend/src/handler"
+	"github.com/unedtamps/go-backend/src/middleware"
 )
 
-func AccountRouter(path string, r *gin.Engine, a handler.AccountHandlerI) {
+func AccountRouter(path string, r *gin.Engine, h handler.AccountHandlerI) {
 	v1 := r.Group(fmt.Sprintf("%s/v1", path))
 	{
-		v1.GET("/get", a.GetOne)
+		v1.POST("/register", h.RegisterUserAccount)
+		v1.GET("/register/confirm", middleware.VerifiyJwtToken, h.ConfirmRegistrant)
+		v1.GET("/register/resend/:email", h.ResendEmailConfirm)
+		v1.POST("/login", h.LoginHandler)
 	}
 
 	// account := r.Group(path)

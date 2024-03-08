@@ -17,6 +17,10 @@ test:
 	@ENV="test" go test -v -cover ./...
 dev:
 	@ENV="dev" GIN_MODE="debug" air
+seed:
+	@go run internal/seed/main.go
+seed-admin:
+	@go run internal/seed/main.go admin
 prod:
 	@go build -o ./bin/app 
 	@ENV="prod" GIN_MODE="release" ./bin/app
@@ -24,4 +28,4 @@ install:
 	@go get -u
 
 
-.PHONY: migrateup migratedown migrateforce sqlc createdb test dev prod
+.PHONY: migrateup migratedown migrateforce sqlc createdb test dev prod seed seed-admin install

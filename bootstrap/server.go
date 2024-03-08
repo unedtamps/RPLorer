@@ -18,7 +18,7 @@ type Server struct {
 }
 
 func InitServer() (*Server, error) {
-	db, err := connectDB()
+	db, err := ConnectDB()
 	if err != nil {
 		return nil, err
 	}

@@ -17,6 +17,7 @@ type Response struct {
 type MetaData struct {
 	Page      int64       `json:"page"`
 	TotalData int64       `json:"total_data"`
+	TotalPage int64       `json:"total_page"`
 	Details   interface{} `json:"details,omitempty"`
 }
 
@@ -24,10 +25,11 @@ func WithPagination(page int64, page_size int64) (int64, int64) {
 	return page_size, (page - 1) * page_size
 }
 
-func WithMetadata(page int64, totalData int64, details interface{}) MetaData {
+func WithMetadata(page int64, totalData int64, totalPage int64, details interface{}) MetaData {
 	return MetaData{
 		Page:      page,
 		TotalData: totalData,
+		TotalPage: totalPage,
 		Details:   details,
 	}
 }
@@ -48,11 +50,11 @@ func responseOk(message string) interface{} {
 	}
 }
 
-func ResponseCreated(c *gin.Context, message string, data ...interface{}) {
+func ResponseCreated(c *gin.Context, message string, data interface{}) {
 	c.JSON(http.StatusCreated, responseWithData(message, data, nil))
 }
 
-func ResponseData(c *gin.Context, message string, metadata *MetaData, data ...interface{}) {
+func ResponseData(c *gin.Context, message string, metadata *MetaData, data interface{}) {
 	c.JSON(http.StatusOK, responseWithData(message, data, metadata))
 }
 

@@ -35,11 +35,6 @@ func RandomHashedPassword() string {
 func RandomInt64() int64 {
 	return rand.Int63()
 }
-
-func RandomTypePremium() string {
-	types := []string{
-		"dcaa02fb-e960-40db-b38b-75dc104fb017",
-		"59318f8a-3e06-49e7-86f7-006039fb2112",
-	}
-	return types[rand.Intn(len(types))]
+func RandomInt8() int {
+	return rand.Intn(10)
 }

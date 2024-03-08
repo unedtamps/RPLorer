@@ -2,12 +2,13 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/unedtamps/go-backend/src/middleware"
 	"github.com/unedtamps/go-backend/src/service"
 	"github.com/unedtamps/go-backend/util"
 )
 
 type AccountHandler struct {
-	acc service.AccountServiceI
+	service.AccountServiceI
 }
 
 type AccountHandlerI interface {
@@ -16,58 +17,90 @@ type AccountHandlerI interface {
 	// GetMe(c *gin.Context)
 	// GetUserByEmail(c *gin.Context)
 	// LoginUser(c *gin.Context)
-	GetOne(c *gin.Context)
+	RegisterUserAccount(c *gin.Context)
+	ConfirmRegistrant(c *gin.Context)
+	ResendEmailConfirm(c *gin.Context)
+	LoginHandler(c *gin.Context)
 }
 
-func newAccountHandler(accService service.AccountService) AccountHandlerI {
-	return &AccountHandler{&accService}
+func newAccountHandler(accService service.AccountServiceI) AccountHandlerI {
+	return &AccountHandler{accService}
 }
 
 type createUserParams struct {
-	Name     string `json:"name"     binding:"required,min=8,max=255"`
-	Email    string `json:"email"    binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8,max=255"`
+	FirstName string `json:"first_name" binding:"required,max=255"`
+	LastName  string `json:"last_name"  binding:"required,max=255"`
+	Username  string `json:"user_name"  binding:"required,min=8,max=32"`
+	Email     string `json:"email"      binding:"required,email"`
+	Password  string `json:"password"   binding:"required,min=8,max=255"`
 }
 
 type loginUserParams struct {
 	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 }
-
-func (h *AccountHandler) GetOne(c *gin.Context) {
-	acc, err := h.acc.GetOne(c)
-	if err != nil {
-		util.UnknownError(c, err)
-		return
-	}
-	util.ResponseData(c, "get one user", nil, acc)
+type emailUri struct {
+	Email string `uri:"email" binding:"required,email"`
 }
 
-// func (h *AccountHandler) CreateUser(c *gin.Context) {
-// 	var params createUserParams
-// 	if err := c.ShouldBindJSON(&params); err != nil {
-// 		c.JSON(http.StatusBadRequest, util.ErrorHandler(err))
-// 		return
-// 	}
-// 	user, err := h.CreateUser(c, params.Name, params.Email, params.Password)
+func (h *AccountHandler) RegisterUserAccount(c *gin.Context) {
+	var params createUserParams
+	if err := c.ShouldBindJSON(&params); err != nil {
+		util.BadRequest(c, err)
+		return
+	}
+	account, err := h.CreateUserService(
+		c,
+		params.FirstName,
+		params.LastName,
+		params.Username,
+		params.Email,
+		params.Password,
+	)
+	if err != nil {
+		util.UnknownError(c, err.Error, err.Code)
+		return
+	}
+	util.ResponseCreated(c, "Account created", account)
+}
 
-// 	// send email confirmation
-// 	body := make(chan string)
-// 	go func() {
-// 		body <- util.ParseAccountConfirmation(util.EmailConfirm{
-// 			Id:    user.ID,
-// 			Name:  user.Name,
-// 			Email: user.Email,
-// 		})
-// 	}()
-// 	go helper.NewEmail("Account Confirmation", user.Email, body).Send()
+func (h *AccountHandler) ResendEmailConfirm(c *gin.Context) {
+	var email emailUri
+	if err := c.ShouldBindUri(&email); err != nil {
+		util.BadRequest(c, err)
+		return
+	}
+	err := h.ReSendEmailConfirmation(c, email.Email)
+	if err != nil {
+		util.UnknownError(c, err.Error, err.Code)
+		return
+	}
+	util.ResponseOk(c, "email confirmation sent")
+}
 
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, util.ErrorHandler(err))
-// 		return
-// 	}
-// 	util.ResponseCreated(c, "User created", user)
-// }
+func (h *AccountHandler) ConfirmRegistrant(c *gin.Context) {
+	acc := c.Value("cred").(middleware.Credentials)
+	err := h.ActivatedAccount(c, acc.Id)
+	if err != nil {
+		util.UnknownError(c, err.Error, err.Code)
+		return
+	}
+	util.ResponseOk(c, "account activated")
+}
+
+func (h *AccountHandler) LoginHandler(c *gin.Context) {
+	var login loginUserParams
+	if err := c.ShouldBindJSON(&login); err != nil {
+		util.BadRequest(c, err)
+		return
+	}
+	token, err := h.LoginService(c, login.Email, login.Password)
+	if err != nil {
+		util.UnknownError(c, err.Error, err.Code)
+		return
+	}
+	util.ResponseData(c, "success login", nil, TokenJwt{Token: *token})
+}
 
 // func (h *UserHandler) GetAllUser(c *gin.Context) {
 // 	var params paginateForm

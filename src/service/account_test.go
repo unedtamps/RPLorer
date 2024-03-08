@@ -1,6 +1,7 @@
 package service
 
-var testUserService *AccountService
+var testUserService AccountServiceI = testService.Account
+
 
 // func TestLogin(t *testing.T) {
 // 	ctx := context.Background()

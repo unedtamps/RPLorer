@@ -1,5 +1,5 @@
 CREATE TABLE "comment" (
-  "id" uuid PRIMARY KEY NOT NULL,
+  "id" uuid PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
   "post_id" uuid NOT NULL,
   "account_id" uuid NOT NULL,
   "parrent_id" uuid,

@@ -1,5 +1,5 @@
 CREATE TABLE "post" (
-  "id" uuid PRIMARY KEY NOT NULL,
+  "id" uuid PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
   "account_id" uuid NOT NULL,
   "caption" text NOT NULL,
   "likes_count" bigint NOT NULL DEFAULT 0,

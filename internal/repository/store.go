@@ -4,22 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type Store struct {
-	*Queries
+	Querier
 	db *sql.DB
 }
 
 func NewStore(db *sql.DB) *Store {
 	return &Store{
 		db:      db,
-		Queries: New(db),
+		Querier: NewRepository(db),
 	}
 }
 
-func NewRepository(conn *sql.DB) *Store {
-	return NewStore(conn)
+func NewRepository(db *sql.DB) Querier {
+	return New(db)
 }
 
 // create a transaction with context then call back function to execute queries
@@ -37,6 +39,91 @@ func (st *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+func (st *Store) LikePostWithTx(ctx context.Context, accountId, postId uuid.UUID) error {
+	return st.execTx(ctx, func(q *Queries) error {
+		err := q.CreateLikedPost(ctx, CreateLikedPostParams{
+			AccountID: accountId,
+			PostID:    postId,
+		})
+		if err != nil {
+			return err
+		}
+		id, err := q.UpdateLikeCountIncrement(ctx, postId)
+		if err != nil {
+			return err
+		}
+		err = q.UpdateGetLikeUserDetail(ctx, id)
+		if err != nil {
+			return err
+		}
+		err = q.UpdateGiveLikeUserDetail(ctx, accountId)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (st *Store) UnlikePostWithTx(ctx context.Context, accountId, postId uuid.UUID) error {
+	return st.execTx(ctx, func(q *Queries) error {
+		err := q.DeleteLikedPost(ctx, DeleteLikedPostParams{
+			AccountID: accountId,
+			PostID:    postId,
+		})
+		if err != nil {
+			return err
+		}
+		id, err := q.UpdateLikeCountDecrement(ctx, postId)
+		if err != nil {
+			return err
+		}
+		err = q.UpdateDecreaseGetLikeUserDetail(ctx, id)
+		if err != nil {
+			return err
+		}
+		err = q.UpdateDecreaseGiveLikeUserDetail(ctx, accountId)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (st *Store) DeletePostWithTx(ctx context.Context, postId uuid.UUID) error {
+	return st.execTx(ctx, func(q *Queries) error {
+		owener_id, err := q.QueryUserIdfromPost(ctx, postId)
+		if err != nil {
+			return err
+		}
+		account_id, err := q.QueryGetAccoutFromLikedByPostId(ctx, postId)
+		if err != nil {
+			return err
+		}
+		for _, i := range account_id {
+			q.UpdateDecreaseGetLikeUserDetail(ctx, owener_id)
+			q.UpdateDecreaseGiveLikeUserDetail(ctx, i)
+		}
+		err = q.DeleteLikedByPostId(ctx, postId)
+		if err != nil {
+			return err
+		}
+		err = q.DeleteImageByPostId(ctx, postId)
+		if err != nil {
+			return err
+		}
+		err = q.DeleteCommentByPostId(ctx, postId)
+		if err != nil {
+			return err
+		}
+		err = q.DeletePostById(ctx, postId)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 // note: we cah use select for update no key , so pgsql know we would not update

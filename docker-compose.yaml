@@ -5,22 +5,19 @@ services:
   postgres:
     container_name: postgres_rpl
     image: postgres
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=rplorer
+    env_file:
+      - .env
     ports:
       - 5432:5432
     networks:
       - rpl_network
     volumes:
-      - ~/apps/postgres:/var/lib/postgresql/rplorer
+      - ~/apps/postgres:/var/lib/postgresql/rpl_db
   redis:
     container_name: redis_rpl
     image: redis:7.2.4-alpine
-    environment:
-      - REDIS_PASSWORD=password
-      - REDIS_DB=0
+    env_file:
+      - .env
     ports:
       - 6379:6379
     networks:
@@ -38,5 +35,5 @@ services:
     depends_on:
       - postgres
       - redis
-    entrypoint: ["/app/wait-for.sh", "postgres_todo:5432", "--", "/app/start.sh"]
+    entrypoint: ["/app/wait-for.sh", "postgres_rpl:5432", "--", "/app/start.sh"]
     command: ["/app/main"]

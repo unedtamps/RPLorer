@@ -8,6 +8,11 @@ CREATE TYPE "status" AS ENUM (
   'DELETED'
 );
 
+CREATE TYPE "account_status" AS ENUM (
+  'ACTIVE',
+  'INACTIVE'
+);
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE OR REPLACE FUNCTION on_update()

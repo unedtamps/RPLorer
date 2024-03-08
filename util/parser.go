@@ -7,9 +7,9 @@ import (
 )
 
 type EmailConfirm struct {
-	Id    string
 	Name  string
-	Email string
+	Host  string
+	Token string
 }
 
 func ParseAccountConfirmation(em EmailConfirm) string {

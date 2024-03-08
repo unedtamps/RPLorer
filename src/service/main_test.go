@@ -25,6 +25,14 @@ var (
 	redisDb       = 0
 )
 
+func newTestService(db *repository.Store, cache *redis.Client) *Service {
+	return &Service{
+		Account: newAccountService(db, cache),
+	}
+}
+
+var testService *Service
+
 func TestMain(m *testing.M) {
 
 	var err error
@@ -34,11 +42,12 @@ func TestMain(m *testing.M) {
 	}
 	testStore := repository.NewStore(testDB)
 
-	redisClent := redis.NewClient(&redis.Options{
+	testRedis := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
 		Password: redisPassword,
 		DB:       redisDb,
 	})
-	testUserService = newAccountService(testStore, redisClent)
+	testService = newTestService(testStore, testRedis)
+
 	os.Exit(m.Run())
 }

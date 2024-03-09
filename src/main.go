@@ -11,7 +11,6 @@ func NewRouter(h *handler.Handler) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.Default())
 	r.Static("/static", "./storage")
-	r.MaxMultipartMemory = 2 << 20
 	router.AccountRouter("/user", r, h.Acc)
 	router.PostRouter("/post", r, h.Post)
 	return r

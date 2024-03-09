@@ -8,7 +8,7 @@ import (
 	"github.com/unedtamps/go-backend/config"
 )
 
-func ConnectDB() (*sql.DB, error) {
+func connectDB() (*sql.DB, error) {
 	db_url := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.Env.PosgresHost,
